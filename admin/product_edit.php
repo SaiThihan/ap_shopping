@@ -48,10 +48,11 @@ if ($_POST) {
                 $qty = $_POST['quantity'];
                 $price = $_POST['price'];
                 $image = $_FILES['image']['name'];
+                $id = $_POST['id'];
 
                 move_uploaded_file($_FILES['image']['tmp_name'], $file);
 
-                $stmt = $pdo->prepare("UPDATE products SET name=:name,description=:description,category_id=:category,price=:price,quantity=:quantity,image=:image");
+                $stmt = $pdo->prepare("UPDATE products SET name=:name,description=:description,category_id=:category,price=:price,quantity=:quantity,image=:image WHERE id=:id");
 
                 $result = $stmt->execute(
                     array(
@@ -60,7 +61,8 @@ if ($_POST) {
                         ':category' => $category,
                         ':price' => $price,
                         ':quantity' => $qty,
-                        ':image' => $image
+                        ':image' => $image,
+                        ':id' => $id
                     )
                 );
 
@@ -76,8 +78,9 @@ if ($_POST) {
             $category = $_POST['category'];
             $qty = $_POST['quantity'];
             $price = $_POST['price'];
+            $id = $_POST['id'];
 
-            $stmt = $pdo->prepare("UPDATE products SET name=:name,description=:description,category_id=:category,price=:price,quantity=:quantity");
+            $stmt = $pdo->prepare("UPDATE products SET name=:name,description=:description,category_id=:category,price=:price,quantity=:quantity WHERE id=:id");
 
             $result = $stmt->execute(
                 array(
@@ -85,7 +88,8 @@ if ($_POST) {
                     ':description' => $desc,
                     ':category' => $category,
                     ':price' => $price,
-                    ':quantity' => $qty
+                    ':quantity' => $qty,
+                    ':id'=>$id
                 )
             );
 

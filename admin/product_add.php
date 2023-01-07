@@ -1,46 +1,55 @@
 <?php
 session_start();
+
 require '../config/config.php';
 require '../config/common.php';
 
 if (empty($_SESSION['user_id']) && empty($_SESSION['logged_in'])) {
-  header('Location: login.php');
+  header('Location: /admin/login.php');
+}
+if ($_SESSION['role'] != 1) {
+  header('Location: /admin/login.php');
 }
 
-
 if ($_POST) {
-    if(empty($_POST['name']) || empty($_POST['description']) || empty($_POST['category']) || empty($_POST['quantity']) || empty($_POST['price']) || empty($_FILES['image'])){
-        if(empty($_POST['name'])){
-            $nameError = "name is required";
-        }
-        if(empty($_POST['description'])){
-            $descError = "Description is required";
-        }
-        if(empty($_POST['category'])){
-          $catError = "Category is required";
-        }
-        if(empty($_POST['quantity'])){
-          $qtyError = "Quantity is required";
-        }elseif (is_numeric($_POST['quantity']) != 1 ){
-          $qtyError = "Quantity should be integer value";
-        }
-        if(empty($_POST['price'])){
-          $priceError = "Price is required";
-        }elseif (is_numeric($_POST['price']) != 1 ){
-          $priceError = "Price should be integer value";
-        }
-        if(empty($_FILES['image'])){
-          $imageError = "Image is required";
-        }
-    }else{
-      //validation success
+  if (empty($_POST['name']) || empty($_POST['description']) || empty($_POST['category'])
+      || empty($_POST['quantity']) || empty($_POST['price']) || empty($_FILES['image'])) {
+    if (empty($_POST['name'])) {
+      $nameError = 'Category name is required';
+    }
+    if (empty($_POST['description'])) {
+      $descError = 'Description is required';
+    }
+    if (empty($_POST['category'])) {
+      $catError = 'Category is required';
+    }
+    if (empty($_POST['quantity'])) {
+      $qtyError = 'Quantity is required';
+    }
+    if (empty($_POST['price'])) {
+      $priceError = 'Price is required';
+    }
+
+    if (empty($_FILES['image'])) {
+      $imageError = 'Image is required';
+    }
+  }else{//fields are included.
+
+    if( is_numeric($_POST['quantity']) !=1){
+      $qtyError = "Quantity should be integer value";
+    }
+
+    if( is_numeric($_POST['quantity']) !=1){
+      $priceError = "Price should be integer value";
+    }
+
+    if ($qtyError == '' && $priceError == '') {
       $file = 'images/'.($_FILES['image']['name']);
       $imageType = pathinfo($file,PATHINFO_EXTENSION);
 
-      if($imageType != 'jpg' && $imageType != 'jpeg' && $imageType != 'png'){
-        echo "<script>alert('Image should be png, jpg, jpeg')</script>";
-      }else{
-        //image validation success
+      if ($imageType != 'jpg' && $imageType != 'jpeg' && $imageType != 'png') {
+        echo "<script>alert('Image should be jpg,jpeg,png');</script>";
+      }else{ //image validation success
         $name = $_POST['name'];
         $desc = $_POST['description'];
         $category = $_POST['category'];
@@ -50,28 +59,22 @@ if ($_POST) {
 
         move_uploaded_file($_FILES['image']['tmp_name'],$file);
 
-        $stmt = $pdo->prepare("INSERT INTO products (name,description,category_id,price,quantity,image) values (:name,:description,:category,:price,:quantity,:image)");
+        $stmt = $pdo->prepare("INSERT INTO products(name,description,category_id,price,quantity,image)
+         VALUES (:name,:description,:category,:price,:quantity,:image)");
 
-        $result=$stmt->execute(
-          array(
-            ':name'=> $name,
-            ':description' =>$desc,
-            ':category' => $category,
-            ':price'=> $price,
-            ':quantity' => $qty,
-            ':image'=> $image
-          )
-          );
+        $result = $stmt->execute(
+            array(':name'=>$name,':description'=>$desc,':category'=>$category,':price'=>$price,':quantity'=>$qty,':image'=>$image)
+        );
 
-          if($result){
-            echo "<script>alert('Product is added'); window.location.href='index.php';</script>";
-          }
-      } 
+        if ($result) {
+          echo "<script>alert('Product is added');window.location.href='index.php';</script>";
+        }
+      }
     }
+  }
 }
 
 ?>
-
 
 <?php include('header.php'); ?>
     <!-- Main content -->
@@ -92,20 +95,17 @@ if ($_POST) {
                     <textarea class="form-control" name="description" rows="8" cols="80"></textarea>
                   </div>
                   <div class="form-group">
-                    <?php 
-                    $catStmt = $pdo->prepare("SELECT * FROM categories");
-                    $catStmt->execute();
-                    $catResult = $catStmt->fetchAll();
+                    <?php
+                      $catStmt = $pdo->prepare("SELECT * FROM categories");
+                      $catStmt->execute();
+                      $catResult = $catStmt->fetchAll();
                     ?>
                     <label for="">Category</label><p style="color:red"><?php echo empty($catError) ? '' : '*'.$catError; ?></p>
-                    <select name="category" id="" class="form-control">
-                        <option value="">Select category</option>
-                        <?php 
-                        foreach ($catResult as $value){  ?>
-                        <option value="<?php echo $value['id']; ?>"><?php echo $value['name']; ?></option>
-                        <?php
-                        }
-                        ?>
+                    <select class="form-control" class="" name="category">
+                      <option value="">SELECT CATEGORY</option>
+                      <?php foreach ($catResult as $value) { ?>
+                        <option value="<?php echo $value['id']?>"><?php echo $value['name']?></option>
+                      <?php } ?>
                     </select>
                   </div>
                   <div class="form-group">
@@ -118,7 +118,7 @@ if ($_POST) {
                   </div>
                   <div class="form-group">
                     <label for="">Image</label><p style="color:red"><?php echo empty($imageError) ? '' : '*'.$imageError; ?></p>
-                    <input type="file"  name="image" value="">
+                    <input type="file" name="image" value="">
                   </div>
                   <div class="form-group">
                     <input type="submit" class="btn btn-success" name="" value="SUBMIT">

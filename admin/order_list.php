@@ -44,10 +44,6 @@ if (empty($_SESSION['user_id']) && empty($_SESSION['logged_in'])) {
                     ?>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <div>
-                            <a href="cat_add.php" type="button" class="btn btn-success">New Category</a>
-                        </div>
-                        <br>
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
